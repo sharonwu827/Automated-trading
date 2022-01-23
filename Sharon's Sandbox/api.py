@@ -17,10 +17,10 @@ def crypto_real_time_viz(tickers):
 
     # Candlestick
     fig.add_trace(go.Candlestick(x=data.index,
-                                 open=BTC['Open'],
-                                 high=BTC['High'],
-                                 low=BTC['Low'],
-                                 close=BTC['Close'], name='market data'))
+                                 open=data['Open'],
+                                 high=data['High'],
+                                 low=data['Low'],
+                                 close=data['Close'], name='market data'))
 
     # Add titles
     fig.update_layout(
