@@ -12,3 +12,5 @@ geopy
 nest_asyncio
 TextBlob
 wordcloud
+keras
+tensorflow
