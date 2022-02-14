@@ -140,7 +140,7 @@ class Signal(object):
             y_pred = model.predict(x)           
             ax.plot(y_pred, label='Trend')           
             arr = np.c_[range(target.shape[0]), target[['open', 'high', 'low', 'close']].values]
-            mpf.candlestick_ohlc(ax, arr, width=0.4, alpha=1, colordown='#53c156', colorup='#ff1717')          
+            mpf.candlestick_ohlc(ax, arr, width=0.4, alpha=1, colordown='#ff1717', colorup='#53c156')
             locs, labels = plt.xticks() 
             plt.setp(labels , rotation = 45)
             plt.grid()
