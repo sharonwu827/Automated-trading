@@ -9,11 +9,12 @@ import pandas as pd
 import pickle
 from sklearn.utils import shuffle
 from keras.models import load_model
+from data.crypto_compare import *
 
 
 class Main(object):
 
-    def __init__(self, target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot):
+    def __init__(self, target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot, sample_size=30):
         self.target = target
         self.rule = rule
         self.url_his = url_his
@@ -28,6 +29,7 @@ class Main(object):
         self.load_data = None
         self.load_model = None
         self.pattern_dict = dict()
+        self.sample_size = sample_size
         for i, j in zip(signal_ls, range(len(signal_ls))):
             self.pattern_dict[j] = i
         self.pattern_dict[len(signal_ls)] = 'No Pattern'
@@ -46,18 +48,18 @@ class Main(object):
 
     def gasf(self):
         data_1D_pattern = pd.read_csv(self.data_pattern)
-        gasf_arr = np.zeros((len(self.signal_ls) + 1, 30, 10, 10, 4))
+        gasf_arr = np.zeros((len(self.signal_ls) + 1, self.sample_size, 10, 10, 4)) # choose 30 samples for each signal
         for i, j in zip(self.signal_ls, range(len(self.signal_ls))):
             gasf = util_gasf.detect(data_1D_pattern, i)
-            if gasf.shape[0] == 0:
+            if gasf.shape[0] == 0:  # if there is no sample for signal
                 continue  # ingore for now
-            gasf_arr[j, :, :, :, :] = gasf[0:30, :, :, :]  # data balancing
+            gasf_arr[j, :, :, :, :] = gasf[0:self.sample_size, :, :, :]  # data balancing
         df = data_1D_pattern.copy()
         for i in self.signal_ls:
-            df = df.loc[df[i] != 1]
-        df = shuffle(df[9::])
+            df = df.loc[df[i] != 1]  # none signal pattern
+        df = shuffle(df[9::])  # 1 out of 9
         gasf = util_gasf.detect(data_1D_pattern, 'n', df)
-        gasf_arr[-1, :, :, :, :] = gasf[0:30, :, :, :]
+        gasf_arr[-1, :, :, :, :] = gasf[0:self.sample_size, :, :, :]
         self.gasf_arr = 'gasf_arr_' + self.target
         with open(self.gasf_arr, 'wb') as handle:
             pickle.dump(gasf_arr, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -117,8 +119,15 @@ class Main(object):
 
 
 if __name__ == "__main__":
+
+    target = 'BTC_USD'
+    file_name = target + '_history.csv'
+    df = get_timeseries_history(target.replace('_','/'), '2017-06-01', '2022-02-07', 'hour')
+    df.to_csv(file_name)
+    print(df.head())
+
     # 夏令轉冬令的轉折時間
-    target = 'S&P500'
+
     rule = '1D'
     url_his = None
     url_real = None
@@ -126,8 +135,8 @@ if __name__ == "__main__":
     real_ls = ['timestamp', 'open', 'dayHigh', 'dayLow', 'price']
     # signal_ls = ['MorningStar', 'EveningStar', 'BearishHarami', 'BullishHarami']
     signal_ls = ['MorningStar', 'EveningStar']
-    save_plot = True
-    file_name = 'ETHUSD_history.csv'
+    save_plot = False
+
 
     main = Main(target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot)
     main.api_history(filename=file_name)
