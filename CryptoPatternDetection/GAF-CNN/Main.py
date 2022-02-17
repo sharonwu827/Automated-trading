@@ -11,6 +11,8 @@ from sklearn.utils import shuffle
 from keras.models import load_model
 from data.crypto_compare import *
 
+import click
+
 
 class Main(object):
 
@@ -118,35 +120,40 @@ class Main(object):
             return False
 
 
+@click.command()
+@click.option('-mode', default='csv_download', help='csv_download, gasf, gasf+cnn')
+@click.option('-targets', default='BTC_USD', help='Number of greetings.')
+@click.option('-start_date', default='2017-06-01', help='Number of greetings.')
+@click.option('-end_date', default='2022-02-15', help='Number of greetings.')
+@click.option('-frequency', default='hour', help='Number of greetings.')
+def run(mode, targets, start_date, end_date, frequency):
+    for target in targets.split(','):
+        file_name = f'./csv/{target}_history.csv'
+        if mode == 'csv_download':
+            target = target
+            df = get_timeseries_history(target.replace('_', '/'), start_date, end_date, frequency)
+            df.to_csv(file_name)
+            print(df.head())
+        elif 'gasf' in mode:
+            rule = '1D'
+            url_his = None
+            url_real = None
+            his_ls = ['date', 'open', 'high', 'low', 'close', 'volume']
+            real_ls = ['timestamp', 'open', 'dayHigh', 'dayLow', 'price']
+            # signal_ls = ['MorningStar', 'EveningStar', 'BearishHarami', 'BullishHarami']
+            signal_ls = ['MorningStar', 'EveningStar']
+            save_plot = False
+
+            main = Main(target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot)
+            main.api_history(filename=file_name)
+            main.rule_based()
+            main.gasf()
+            if mode == 'gasf+cnn':
+                main.process_xy()
+                main.cnn()
+
 if __name__ == "__main__":
-
-    target = 'BTC_USD'
-    file_name = target + '_history.csv'
-    df = get_timeseries_history(target.replace('_','/'), '2017-06-01', '2022-02-07', 'hour')
-    df.to_csv(file_name)
-    print(df.head())
-
-    # 夏令轉冬令的轉折時間
-
-    rule = '1D'
-    url_his = None
-    url_real = None
-    his_ls = ['date', 'open', 'high', 'low', 'close', 'volume']
-    real_ls = ['timestamp', 'open', 'dayHigh', 'dayLow', 'price']
-    # signal_ls = ['MorningStar', 'EveningStar', 'BearishHarami', 'BullishHarami']
-    signal_ls = ['MorningStar', 'EveningStar']
-    save_plot = False
-
-
-    main = Main(target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot)
-    main.api_history(filename=file_name)
-    main.rule_based()
-    main.gasf()
-    main.process_xy()
-    main.cnn()
-    # main.api_realtime()
-    # main.predict_realtime()
-
+    run()
 
 
 
