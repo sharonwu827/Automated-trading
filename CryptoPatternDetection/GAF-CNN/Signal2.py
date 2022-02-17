@@ -190,7 +190,7 @@ class Signal(object):
                 if self.save_plot == True:
                     self.pattern(self.data, self.time_period, signal)
         
-        file_name = './csv/' + target + self.time_period + '_pattern.csv'
+        file_name = './csv/' + target + '_pattern.csv'
         self.data.to_csv(file_name, index=False)
         return file_name
         
