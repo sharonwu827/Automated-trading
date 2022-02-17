@@ -14,7 +14,7 @@ from data.crypto_compare import *
 import click
 
 
-class Main(object):
+class PatternModel(object):
 
     def __init__(self, target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot, sample_size=30):
         self.target = target
@@ -144,7 +144,7 @@ def run(mode, targets, start_date, end_date, frequency):
             signal_ls = ['MorningStar', 'EveningStar']
             save_plot = False
 
-            main = Main(target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot)
+            main = PatternModel(target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot)
             main.api_history(filename=file_name)
             main.rule_based()
             main.gasf()
