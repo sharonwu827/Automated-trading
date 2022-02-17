@@ -115,6 +115,6 @@ def get_timeseries_history(pair, start_date, end_date, timeframe):
 
 
 if __name__ == '__main__':
-    df = get_timeseries_history('ETH/USD', '2017-06-01', '2022-02-07', 'hour')
+    df = get_timeseries_history('ETH/USD', '2021-12-09', '2022-02-07', 'hour')
     df.to_csv('./csv/ETHUSD_history.csv')
     print(df.head())

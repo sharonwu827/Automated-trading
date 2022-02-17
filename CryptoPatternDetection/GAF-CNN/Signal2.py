@@ -168,7 +168,7 @@ class Signal(object):
         self.data['trend1'] = self.data['close'].rolling(7).apply(self.trend, raw=False)
         self.data['trend2'] = self.data['close'].rolling(8).apply(self.trend, raw=False)
         
-    def detect_all(self):
+    def detect_all(self, target):
         for signal in self.detect_ls:
             if signal == 'MorningStar':
                 self.data['MorningStar'] = self.data['close'].rolling(4).apply(self.dataframe_roll_morning(self.data), raw=False)
@@ -190,7 +190,7 @@ class Signal(object):
                 if self.save_plot == True:
                     self.pattern(self.data, self.time_period, signal)
         
-        file_name = 'S&P500_' + self.time_period + '_pattern.csv'
+        file_name = './csv/' + target + self.time_period + '_pattern.csv'
         self.data.to_csv(file_name, index=False)
         return file_name
         

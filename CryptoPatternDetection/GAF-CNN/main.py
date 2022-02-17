@@ -11,8 +11,10 @@ from sklearn.utils import shuffle
 from keras.models import load_model
 from data.crypto_compare import *
 
+import click
 
-class Main(object):
+
+class PatternModel(object):
 
     def __init__(self, target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot, sample_size=30):
         self.target = target
@@ -43,7 +45,7 @@ class Main(object):
     def rule_based(self):
         Sig = Signal(self.data, self.signal_ls, self.save_plot)
         Sig.process()
-        self.data_pattern = Sig.detect_all()
+        self.data_pattern = Sig.detect_all(self.target)
         Sig.summary()
 
     def gasf(self):
@@ -60,24 +62,24 @@ class Main(object):
         df = shuffle(df[9::])  # 1 out of 9
         gasf = util_gasf.detect(data_1D_pattern, 'n', df)
         gasf_arr[-1, :, :, :, :] = gasf[0:self.sample_size, :, :, :]
-        self.gasf_arr = 'gasf_arr_' + self.target
+        # self.gasf_arr = './gasf_arr/gasf_arr_' + self.target
         with open(self.gasf_arr, 'wb') as handle:
             pickle.dump(gasf_arr, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def process_xy(self):
         with open(self.gasf_arr, 'rb') as handle:
             gasf_arr = pickle.load(handle)
-        x_arr = np.zeros(((len(self.signal_ls) + 1), 30, 10, 10, 4))
+        x_arr = np.zeros(((len(self.signal_ls) + 1), self.sample_size, 10, 10, 4))
         for i in range(len(self.signal_ls) + 1):
-            x_arr[i, :, :, :, :] = gasf_arr[i, 0:30, :, :, :]
-        x_arr = gasf_arr.reshape((len(self.signal_ls) + 1) * 30, 10, 10, 4)
+            x_arr[i, :, :, :, :] = gasf_arr[i, 0:self.sample_size, :, :, :]
+        x_arr = gasf_arr.reshape((len(self.signal_ls) + 1) * self.sample_size, 10, 10, 4)
         y_arr = []
         for i in range(len(self.signal_ls) + 1):
-            ls = [i] * 30
+            ls = [i] * self.sample_size
             y_arr.extend(ls)
         y_arr = np.array(y_arr)
         load_data = {'data': x_arr, 'target': y_arr}
-        self.load_data = 'load_data_' + self.target
+        self.load_data = './load_data/load_data_' + self.target
         with open(self.load_data, 'wb') as handle:
             pickle.dump(load_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -91,7 +93,7 @@ class Main(object):
         model.build()
         model.train(0.2)
         model.show()
-        self.load_model = 'CNN_' + self.target + '.h5'
+        self.load_model = './model/CNN_' + self.target + '.h5'
         model.save(self.load_model)
 
     def api_realtime(self):
@@ -118,35 +120,51 @@ class Main(object):
             return False
 
 
+@click.command()
+@click.option('-mode', default='csv_download', help='csv_download, gasf, gasf+cnn')
+@click.option('-targets', default='BTC_USD', help='Number of greetings.')
+@click.option('-start_date', default='2022-01-01', help='Number of greetings.')
+@click.option('-end_date', default='2022-02-15', help='Number of greetings.')
+@click.option('-frequency', default='hour', help='Number of greetings.')
+@click.option('-sample_size', default=30, help='Number of cvs samples to gasf.')
+
+def run(mode, targets, start_date, end_date, frequency, sample_size):
+    for target in targets.split(','):
+        rule = '1D'
+        url_his = None
+        url_real = None
+        his_ls = ['date', 'open', 'high', 'low', 'close', 'volume']
+        real_ls = ['timestamp', 'open', 'dayHigh', 'dayLow', 'price']
+        # signal_ls = ['MorningStar', 'EveningStar', 'BearishHarami', 'BullishHarami']
+        signal_ls = ['MorningStar', 'EveningStar']
+        save_plot = False
+        file_name = f'./csv/{target}_history.csv'
+        main = PatternModel(target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot, sample_size)
+        main.gasf_arr = './gasf_arr/gasf_arr_' + target
+        main.data_pattern = './csv/' + target + '_pattern.csv'
+
+        if mode == 'csv_download':
+            target = target
+            df = get_timeseries_history(target.replace('_', '/'), start_date, end_date, frequency)
+            df.to_csv(file_name)
+            print(df.head())
+
+        elif mode == 'csv_pattern':
+            main.api_history(filename=file_name)
+            main.rule_based()
+
+        elif 'gasf' in mode:
+            main.gasf()
+            if mode == 'gasf+cnn':
+                main.process_xy()
+                main.cnn()
+
+        elif mode == 'cnn':
+            main.process_xy()
+            main.cnn()
+
 if __name__ == "__main__":
-
-    target = 'BTC_USD'
-    file_name = target + '_history.csv'
-    df = get_timeseries_history(target.replace('_','/'), '2017-06-01', '2022-02-07', 'hour')
-    df.to_csv(file_name)
-    print(df.head())
-
-    # 夏令轉冬令的轉折時間
-
-    rule = '1D'
-    url_his = None
-    url_real = None
-    his_ls = ['date', 'open', 'high', 'low', 'close', 'volume']
-    real_ls = ['timestamp', 'open', 'dayHigh', 'dayLow', 'price']
-    # signal_ls = ['MorningStar', 'EveningStar', 'BearishHarami', 'BullishHarami']
-    signal_ls = ['MorningStar', 'EveningStar']
-    save_plot = False
-
-
-    main = Main(target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot)
-    main.api_history(filename=file_name)
-    main.rule_based()
-    main.gasf()
-    main.process_xy()
-    main.cnn()
-    # main.api_realtime()
-    # main.predict_realtime()
-
+    run()
 
 
 
