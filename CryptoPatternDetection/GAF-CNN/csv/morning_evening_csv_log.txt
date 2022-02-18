@@ -1,0 +1,17 @@
+ETH_USD, 
+
+Period : 2017-04-27 21:00:00 - 2022-02-07 05:00:00 
+
+Number of MorningStar : 2608.0 // 42021 
+
+Number of EveningStar : 1052.0 // 42021 
+
+
+
+BTC_USD,
+
+Period : 2017-04-28 18:00:00 - 2022-02-07 06:00:00 
+
+Number of MorningStar : 2656.0 // 42021 
+
+Number of EveningStar : 1094.0 // 42021 
