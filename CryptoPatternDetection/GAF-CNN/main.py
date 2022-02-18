@@ -143,23 +143,20 @@ def run(mode, targets, start_date, end_date, frequency, sample_size):
         main.gasf_arr = './gasf_arr/gasf_arr_' + target
         main.data_pattern = './csv/' + target + '_pattern.csv'
 
-        if mode == 'csv_download':
+        if 'csv_download' in mode:
             target = target
             df = get_timeseries_history(target.replace('_', '/'), start_date, end_date, frequency)
             df.to_csv(file_name)
             print(df.head())
 
-        elif mode == 'csv_pattern':
+        if 'csv_pattern' in mode:
             main.api_history(filename=file_name)
             main.rule_based()
 
-        elif 'gasf' in mode:
+        if 'gasf' in mode:
             main.gasf()
-            if mode == 'gasf+cnn':
-                main.process_xy()
-                main.cnn()
 
-        elif mode == 'cnn':
+        if 'cnn' in mode:
             main.process_xy()
             main.cnn()
 
