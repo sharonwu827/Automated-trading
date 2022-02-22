@@ -6,6 +6,7 @@ Number of MorningStar : 2608.0 // 42021
 
 Number of EveningStar : 1052.0 // 42021 
 
+gasf sample_size 1000
 
 
 BTC_USD,
@@ -15,3 +16,5 @@ Period : 2017-04-28 18:00:00 - 2022-02-07 06:00:00
 Number of MorningStar : 2656.0 // 42021 
 
 Number of EveningStar : 1094.0 // 42021 
+
+gasf sample_size 1000
