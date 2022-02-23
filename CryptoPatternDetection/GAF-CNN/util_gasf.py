@@ -50,18 +50,16 @@ def get_gasf(arr):
     return gasf
 
 
-def get_arr(data, signal, d=None):
+def get_arr(data, signal, d=None, columns=None):
     if signal != 'n':
         df_es = data.loc[data[signal]==1]
     else:
         df_es = d
-    arr = np.zeros((df_es.shape[0], 10, 4))
+    arr = np.zeros((df_es.shape[0], 10, len(columns)))
     for index, N in zip(df_es.index, range(df_es.shape[0])):
         df = data.loc[data.index <= index][-10::]
-        arr[N, :, 0] = df['open']
-        arr[N, :, 1] = df['high']
-        arr[N, :, 2] = df['low']
-        arr[N, :, 3] = df['close']
+        for i, c in enumerate(columns):
+            arr[N, :, i] = df[c]
     return arr
     
     
@@ -72,8 +70,8 @@ def process(file):
     return data
 
 
-def detect(data, signal, d=None):
-    arr = get_arr(data, signal, d)
+def detect(data, signal, columns=['open', 'high', 'low', 'close'], d=None):
+    arr = get_arr(data, signal, columns=columns, d=d)
     gasf = get_gasf(arr)
     return gasf
 

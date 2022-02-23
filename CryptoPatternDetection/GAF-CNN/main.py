@@ -16,7 +16,8 @@ import click
 
 class PatternModel(object):
 
-    def __init__(self, target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot, sample_size=30):
+    def __init__(self, target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot, sample_size=30,
+                 columns=['open','high','low','close']):
         self.target = target
         self.rule = rule
         self.url_his = url_his
@@ -32,6 +33,7 @@ class PatternModel(object):
         self.load_model = None
         self.pattern_dict = dict()
         self.sample_size = sample_size
+        self.columns = columns
         for i, j in zip(signal_ls, range(len(signal_ls))):
             self.pattern_dict[j] = i
         self.pattern_dict[len(signal_ls)] = 'No Pattern'
@@ -50,9 +52,9 @@ class PatternModel(object):
 
     def gasf(self):
         data_1D_pattern = pd.read_csv(self.data_pattern)
-        gasf_arr = np.zeros((len(self.signal_ls) + 1, self.sample_size, 10, 10, 4)) # choose 30 samples for each signal
+        gasf_arr = np.zeros((len(self.signal_ls) + 1, self.sample_size, 10, 10, len(self.columns))) # choose 30 samples for each signal
         for i, j in zip(self.signal_ls, range(len(self.signal_ls))):
-            gasf = util_gasf.detect(data_1D_pattern, i)
+            gasf = util_gasf.detect(data_1D_pattern, i, columns=self.columns)
             if gasf.shape[0] == 0:  # if there is no sample for signal
                 continue  # ingore for now
             gasf_arr[j, :, :, :, :] = gasf[0:self.sample_size, :, :, :]  # data balancing
@@ -60,7 +62,7 @@ class PatternModel(object):
         for i in self.signal_ls:
             df = df.loc[df[i] != 1]  # none signal pattern
         df = shuffle(df[9::])  # 1 out of 9
-        gasf = util_gasf.detect(data_1D_pattern, 'n', df)
+        gasf = util_gasf.detect(data_1D_pattern, 'n', columns=self.columns, d=df)
         gasf_arr[-1, :, :, :, :] = gasf[0:self.sample_size, :, :, :]
         # self.gasf_arr = './gasf_arr/gasf_arr_' + self.target
         with open(self.gasf_arr, 'wb') as handle:
@@ -139,7 +141,8 @@ def run(mode, targets, start_date, end_date, frequency, sample_size):
         signal_ls = ['MorningStar', 'EveningStar']
         save_plot = False
         file_name = f'./csv/{target}_history.csv'
-        main = PatternModel(target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot, sample_size)
+        main = PatternModel(target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot, sample_size,
+                            columns=['open', 'high', 'low', 'close', 'volumefrom', 'volumeto'])
         main.gasf_arr = './gasf_arr/gasf_arr_' + target
         main.data_pattern = './csv/' + target + '_pattern.csv'
 
