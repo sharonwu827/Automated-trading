@@ -17,7 +17,7 @@ import click
 class PatternModel(object):
 
     def __init__(self, target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot, sample_size=30,
-                 columns=['open','high','low','close']):
+                 feature_channels=['open', 'high', 'low', 'close']):
         self.target = target
         self.rule = rule
         self.url_his = url_his
@@ -33,7 +33,7 @@ class PatternModel(object):
         self.load_model = None
         self.pattern_dict = dict()
         self.sample_size = sample_size
-        self.columns = columns
+        self.columns = feature_channels
         for i, j in zip(signal_ls, range(len(signal_ls))):
             self.pattern_dict[j] = i
         self.pattern_dict[len(signal_ls)] = 'No Pattern'
@@ -71,10 +71,10 @@ class PatternModel(object):
     def process_xy(self):
         with open(self.gasf_arr, 'rb') as handle:
             gasf_arr = pickle.load(handle)
-        x_arr = np.zeros(((len(self.signal_ls) + 1), self.sample_size, 10, 10, 4))
+        x_arr = np.zeros(((len(self.signal_ls) + 1), self.sample_size, 10, 10, len(self.columns)))
         for i in range(len(self.signal_ls) + 1):
             x_arr[i, :, :, :, :] = gasf_arr[i, 0:self.sample_size, :, :, :]
-        x_arr = gasf_arr.reshape((len(self.signal_ls) + 1) * self.sample_size, 10, 10, 4)
+        x_arr = gasf_arr.reshape((len(self.signal_ls) + 1) * self.sample_size, 10, 10, len(self.columns))
         y_arr = []
         for i in range(len(self.signal_ls) + 1):
             ls = [i] * self.sample_size
@@ -129,8 +129,9 @@ class PatternModel(object):
 @click.option('-end_date', default='2022-02-15', help='Number of greetings.')
 @click.option('-frequency', default='hour', help='Number of greetings.')
 @click.option('-sample_size', default=30, help='Number of cvs samples to gasf.')
+@click.option('-feature_channels', default="open,high,low,close", help='feature channels')  #['open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
 
-def run(mode, targets, start_date, end_date, frequency, sample_size):
+def run(mode, targets, start_date, end_date, frequency, sample_size, feature_channels):
     for target in targets.split(','):
         rule = '1D'
         url_his = None
@@ -141,8 +142,7 @@ def run(mode, targets, start_date, end_date, frequency, sample_size):
         signal_ls = ['MorningStar', 'EveningStar']
         save_plot = False
         file_name = f'./csv/{target}_history.csv'
-        main = PatternModel(target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot, sample_size,
-                            columns=['open', 'high', 'low', 'close', 'volumefrom', 'volumeto'])
+        main = PatternModel(target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot, sample_size, feature_channels.split(','))
         main.gasf_arr = './gasf_arr/gasf_arr_' + target
         main.data_pattern = './csv/' + target + '_pattern.csv'
 
