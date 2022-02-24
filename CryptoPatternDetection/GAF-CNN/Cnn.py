@@ -104,7 +104,7 @@ class CNN(object):
         predict_x = self.model.predict(self.X_test_image)
         prediction = np.argmax(predict_x, axis=1)
         # prediction = self.model.predict_classes(self.X_test_image)
-        self.plot_images_labels_prediction(self.X_test_image, self.y_test_label, prediction, idx=0)
+        # self.plot_images_labels_prediction(self.X_test_image, self.y_test_label, prediction, idx=0)
         print(pd.crosstab(self.y_test_label, prediction, rownames=['label'], colnames=['predict']))
 
     def save(self, filename):
