@@ -26,18 +26,27 @@ def get_hist_data(from_sym='BTC', to_sym='USD', timeframe='day', limit=2000,
 
     if data_type == 'price':
         url = 'https://min-api.cryptocompare.com/data/v2/histo/'
+        parameters = {'fsym': from_sym,
+                      'tsym': to_sym,
+                      'limit': limit,
+                      'api_key': key,
+                      'aggregate': aggregation}
     elif data_type == 'blockchain':
         url = 'https://min-api.cryptocompare.com/data/blockchain/histo/'
+        parameters = {'fsym': from_sym,
+                      'tsym': to_sym,
+                      'limit': limit,
+                      'api_key': key,
+                      'aggregate': aggregation}
     elif data_type == 'social':
-        url = 'https://min-api.cryptocompare.com/data/social/coin/histo'
+        url = 'https://min-api.cryptocompare.com/data/social/coin/histo/'
+        parameters = {
+                      'limit': limit,
+                      'api_key': key}
 
     url += timeframe
 
-    parameters = {'fsym': from_sym,
-                  'tsym': to_sym,
-                  'limit': limit,
-                  'api_key': key,
-                  'aggregate': aggregation}
+
 
     if toTs:
         parameters['toTs'] = toTs
@@ -51,8 +60,10 @@ def get_hist_data(from_sym='BTC', to_sym='USD', timeframe='day', limit=2000,
 
     # response comes as json
     response = requests.get(url, params=parameters)
-
-    data = response.json()['Data']['Data']
+    if data_type != 'social':
+        data = response.json()['Data']['Data']
+    else:
+        data = response.json()['Data']
 
     return data
 
@@ -120,7 +131,9 @@ def get_timeseries_history(pair, start_date, end_date, timeframe, data_type ='pr
 
 if __name__ == '__main__':
     df = get_timeseries_history('ETH/USD', '2021-12-09', '2022-02-07', 'day', data_type='blockchain')
-    df.plot(y='hashrate')
+    #df.plot(y='hashrate')
+    df = get_timeseries_history('ETH/USD', '2021-12-09', '2022-02-07', 'hour', data_type='social')
+
     df = get_timeseries_history('ETH/USD', '2021-12-09', '2022-02-07', 'hour')
     df.to_csv('./csv/ETHUSD_history.csv')
     print(df.head())
