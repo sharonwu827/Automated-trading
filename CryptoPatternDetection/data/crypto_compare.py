@@ -18,15 +18,25 @@ import seaborn as sns
 # pd.set_option('expand_frame_repr', False)
 plt.style.use('default')
 
+key = 'dfa3e8f0e629d438b183f88b44be15b16d5c2ef8664e12000f658a996e5656f9'
 
 def get_hist_data(from_sym='BTC', to_sym='USD', timeframe='day', limit=2000,
-                  aggregation=1, exchange='', toTs=None):
-    url = 'https://min-api.cryptocompare.com/data/v2/histo'
+                  aggregation=1, exchange='', toTs=None, data_type='price'):
+    url = None
+
+    if data_type == 'price':
+        url = 'https://min-api.cryptocompare.com/data/v2/histo/'
+    elif data_type == 'blockchain':
+        url = 'https://min-api.cryptocompare.com/data/blockchain/histo/'
+    elif data_type == 'social':
+        url = 'https://min-api.cryptocompare.com/data/social/coin/histo'
+
     url += timeframe
 
     parameters = {'fsym': from_sym,
                   'tsym': to_sym,
                   'limit': limit,
+                  'api_key': key,
                   'aggregate': aggregation}
 
     if toTs:
@@ -79,7 +89,7 @@ def plot_data(df, cryptocurrency, target_currency):
     return None
 
 
-def get_timeseries_history(pair, start_date, end_date, timeframe):
+def get_timeseries_history(pair, start_date, end_date, timeframe, data_type ='price'):
     cryptocurrency, target_currency = pair.split('/')
 
     ed = int(datetime.strptime(end_date, '%Y-%m-%d').timestamp())
@@ -95,7 +105,7 @@ def get_timeseries_history(pair, start_date, end_date, timeframe):
         delta_ed = 60
 
     while sd < ed:
-        data = get_hist_data(cryptocurrency, target_currency, timeframe, limit=2000, toTs=ed)
+        data = get_hist_data(cryptocurrency, target_currency, timeframe, limit=2000, toTs=ed, data_type = data_type)
         ed = ed - 2000 * delta_ed
         ed = pd.to_datetime(ed, unit='s').to_pydatetime().timestamp()
         df = data_to_dataframe(data)
@@ -103,18 +113,14 @@ def get_timeseries_history(pair, start_date, end_date, timeframe):
 
     #plot_data(df_all, cryptocurrency, target_currency)
     return df_all
-    # response comes as json
-    # response = requests.get(url, params=parameters)
-    #
-    # data = response.json()['Data']['Data']
-    #
-    # return data
 
 
 
 
 
 if __name__ == '__main__':
+    df = get_timeseries_history('ETH/USD', '2021-12-09', '2022-02-07', 'day', data_type='blockchain')
+    df.plot(y='hashrate')
     df = get_timeseries_history('ETH/USD', '2021-12-09', '2022-02-07', 'hour')
     df.to_csv('./csv/ETHUSD_history.csv')
     print(df.head())
