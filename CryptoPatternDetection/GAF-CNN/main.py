@@ -47,7 +47,7 @@ class PatternModel(object):
     def rule_based(self):
         Sig = Signal(self.data, self.signal_ls, self.save_plot)
         Sig.process()
-        self.data_pattern = Sig.detect_all(self.target)
+        self.data_pattern = Sig.detect_all(self.target, look_forward=8)
         Sig.summary()
 
     def gasf(self):
@@ -140,7 +140,7 @@ def run(mode, targets, start_date, end_date, frequency, sample_size, feature_cha
         real_ls = ['timestamp', 'open', 'dayHigh', 'dayLow', 'price']
         # signal_ls = ['MorningStar', 'EveningStar', 'BearishHarami', 'BullishHarami']
         signal_ls = ['MorningStar', 'EveningStar']
-        save_plot = False
+        save_plot = True
         file_name = f'./csv/{target}_history.csv'
         main = PatternModel(target, rule, url_his, url_real, his_ls, real_ls, signal_ls, save_plot, sample_size, feature_channels.split(','))
         main.gasf_arr = './gasf_arr/gasf_arr_' + target

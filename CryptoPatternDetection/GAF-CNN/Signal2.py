@@ -28,48 +28,58 @@ class Signal(object):
         else:
             return -1
         
-    def dataframe_roll_evening(self, df):       
+    def dataframe_roll_evening(self, df, look_forward):
         def EveningStarSignal(window_series):            
             window_df = df.loc[window_series.index]           
-            trend = window_df['trend1'].iloc[-4]
-            body1 = window_df['realbody'].iloc[-3]
-            body2 = window_df['realbody'].iloc[-2]
-            body3 = window_df['realbody'].iloc[-1]
-            half1 = window_df['open'].iloc[-3] + (body1 * (1 / 2))
-            half2 = window_df['open'].iloc[-3] + (body1 * (4 / 5))
-            close3 = window_df['close'].iloc[-1]
-            open2 = window_df['open'].iloc[-2]                    
+            trend = window_df['trend1'].iloc[0]
+            body1 = window_df['realbody'].iloc[1]
+            body2 = window_df['realbody'].iloc[2]
+            body3 = window_df['realbody'].iloc[3]
+            half1 = window_df['open'].iloc[1] + (body1 * (1 / 2))
+            half2 = window_df['open'].iloc[1] + (body1 * (4 / 5))
+            close3 = window_df['close'].iloc[3]
+            open2 = window_df['open'].iloc[2]
             
             cond1 = (trend == 1) and (body1 > 0) and (body2 > 0) and (body3 < 0)
             cond2 = (open2 > half1)
             cond3 = (close3 < half2)
-            
+
+            ret = (window_df['close'][-1] - window_df['close'][-look_forward]) / window_df['close'][-look_forward]
+
             if cond1 and cond2 and cond3:
-                return 1  
+                if ret <= -0.01:
+                    return 1
+                else:
+                    return 2
             else:
                 return 0            
         return EveningStarSignal
     
-    def dataframe_roll_morning(self, df):    
+    def dataframe_roll_morning(self, df, look_forward):
         def MorningStarSignal(window_series):           
             window_df = df.loc[window_series.index]           
-            trend = window_df['trend1'].iloc[-4]
-            body1 = window_df['realbody'].iloc[-3]
-            body2 = window_df['realbody'].iloc[-2]
-            body3 = window_df['realbody'].iloc[-1]
-            half1 = window_df['open'].iloc[-3] + (body1 * (4 / 5))
-            half2 = window_df['open'].iloc[-3] + (body1 * (1 / 2))
-            close3 = window_df['close'].iloc[-1]
-            open2 = window_df['open'].iloc[-2]
+            trend = window_df['trend1'].iloc[0]
+            body1 = window_df['realbody'].iloc[1]
+            body2 = window_df['realbody'].iloc[2]
+            body3 = window_df['realbody'].iloc[3]
+            half1 = window_df['open'].iloc[1] + (body1 * (4 / 5))
+            half2 = window_df['open'].iloc[1] + (body1 * (1 / 2))
+            close3 = window_df['close'].iloc[3]
+            open2 = window_df['open'].iloc[2]
             #percentile1 = stats.percentileofscore(abs(window_df['realbody']), abs(window_df['realbody'].iloc[-3]), kind='strict')
             
             cond1 = (trend == -1) and (body1 < 0) and (body2 > 0) and (body3 > 0)
             cond2 = (close3 >= half1)
             cond3 = (open2 <= half2)
+
+            ret = (window_df['close'][-1] - window_df['close'][-look_forward]) / window_df['close'][-look_forward]
             #cond4 = (percentile1 > 60)
                          
             if cond1 and cond2 and cond3:
-                return 1 
+                if ret >= 0.01:
+                    return 1 #good morning star
+                else:
+                    return 2 #bad morning star
             else:
                 return 0          
         return MorningStarSignal
@@ -116,22 +126,23 @@ class Signal(object):
                 return 0        
         return BullishHaramiSignal
         
-    def pattern(self, df, rule, signal): 
-        if signal == 'BearishHarami' or signal == 'BullishHarami':
-            last1, last2 = 8, 9
-        elif signal == 'MorningStar' or signal == 'EveningStar':
+    def pattern(self, df, rule, signal, look_forward):
+        # if signal == 'BearishHarami' or signal == 'BullishHarami':
+        #     last1, last2 = 8, 9
+        if 'MorningStar' in signal or 'EveningStar' in signal:
             last1, last2 = 7, 8
-            
+        df = df.reset_index()
         t_ls = df.loc[df[signal] == 1].index        
         for i, j in zip(t_ls, range(1, len(t_ls) + 1)):
-            target = df.loc[df.index <= i].iloc[-10:]              
+            target = df.loc[df.index <= i].iloc[-10-look_forward:]
+            target.set_index('date',inplace=True)
             fontsize=12
             plt.rcParams['xtick.labelsize'] = fontsize  
             plt.rcParams['ytick.labelsize'] = fontsize 
             plt.rcParams['axes.titlesize'] = fontsize           
             fig = plt.figure(figsize=(24, 8))
             ax = plt.subplot2grid((1, 1), (0, 0))           
-            ax.set_xticks(range(10))
+            ax.set_xticks(range(10+look_forward))
             ax.set_xticklabels(target.index)           
             y = target['close'].iloc[0:last1].values.reshape(-1, 1)
             x = np.array(range(1, last2)).reshape(-1, 1)
@@ -168,28 +179,34 @@ class Signal(object):
         self.data['trend1'] = self.data['close'].rolling(7).apply(self.trend, raw=False)
         self.data['trend2'] = self.data['close'].rolling(8).apply(self.trend, raw=False)
         
-    def detect_all(self, target):
+    def detect_all(self, target, look_forward):
         for signal in self.detect_ls:
             if signal == 'MorningStar':
-                self.data['MorningStar'] = self.data['close'].rolling(4).apply(self.dataframe_roll_morning(self.data), raw=False)
+                self.data['MorningStar'] = self.data['close'].shift(-look_forward).rolling(4+look_forward).apply(self.dataframe_roll_morning(self.data, look_forward), raw=False)
+                self.data['MorningStar_good'] = self.data['MorningStar'].map(lambda x: 1 if x == 1 else 0)
+                self.data['MorningStar_bad'] = self.data['MorningStar'].map(lambda x: 1 if x == 2 else 0)
                 if self.save_plot == True: 
-                    self.pattern(self.data, self.time_period, signal)
+                    self.pattern(self.data, self.time_period, 'MorningStar_good', look_forward)
+                    self.pattern(self.data, self.time_period, 'MorningStar_bad', look_forward)
             
             elif signal == 'EveningStar':
-                self.data['EveningStar'] = self.data['close'].rolling(4).apply(self.dataframe_roll_evening(self.data), raw=False)
+                self.data['EveningStar'] = self.data['close'].shift(-look_forward).rolling(4+look_forward).apply(self.dataframe_roll_evening(self.data, look_forward), raw=False)
+                self.data['EveningStar_good'] = self.data['EveningStar'].map(lambda x: 1 if x == 1 else 0)
+                self.data['EveningStar_bad'] = self.data['EveningStar'].map(lambda x: 1 if x == 2 else 0)
                 if self.save_plot == True:
-                    self.pattern(self.data, self.time_period, signal)
+                    self.pattern(self.data, self.time_period, 'EveningStar_good', look_forward)
+                    self.pattern(self.data, self.time_period, 'EveningStar_bad', look_forward)
             
-            elif signal == 'BearishHarami':
-                self.data['BearishHarami'] = self.data['close'].rolling(3).apply(self.dataframe_roll_bear(self.data), raw=False)
-                if self.save_plot == True:
-                    self.pattern(self.data, self.time_period, signal)
-                
-            elif signal == 'BullishHarami':
-                self.data['BullishHarami'] = self.data['close'].rolling(3).apply(self.dataframe_roll_bull(self.data), raw=False)
-                if self.save_plot == True:
-                    self.pattern(self.data, self.time_period, signal)
-        
+            # elif signal == 'BearishHarami':
+            #     self.data['BearishHarami'] = self.data['close'].rolling(3).apply(self.dataframe_roll_bear(self.data), raw=False)
+            #     if self.save_plot == True:
+            #         self.pattern(self.data, self.time_period, signal)
+            #
+            # elif signal == 'BullishHarami':
+            #     self.data['BullishHarami'] = self.data['close'].rolling(3).apply(self.dataframe_roll_bull(self.data), raw=False)
+            #     if self.save_plot == True:
+            #         self.pattern(self.data, self.time_period, signal)
+            #
         file_name = './csv/' + target + '_pattern.csv'
         self.data.to_csv(file_name, index=False)
         return file_name
