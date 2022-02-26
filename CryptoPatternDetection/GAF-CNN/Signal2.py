@@ -7,13 +7,14 @@ import mpl_finance as mpf
 
 
 class Signal(object):
-    def __init__(self, filename, detect_ls, save_plot):
+    def __init__(self, filename, detect_ls, save_plot, pattern_ls):
         self.data = pd.read_csv(filename)
         self.data.rename(columns={'time':'date'}, inplace=True)
         self.data['realbody'] = self.data['close'] - self.data['open']
         self.detect_ls = detect_ls
         self.time_period = None
         self.save_plot = save_plot
+        self.pattern_ls = pattern_ls
 
     def trend(self, series):
         y = series.values.reshape(-1,1)
@@ -217,7 +218,7 @@ class Signal(object):
         print('Period : %s - %s' % (period[0], period[1]), '\n')
         total = self.data.shape[0]
         num = None
-        for i in self.detect_ls:
+        for i in self.pattern_ls:
             num = np.sum(self.data[i])
             print('Number of', i, ': %s // %s' % (num, total), '\n')
         
