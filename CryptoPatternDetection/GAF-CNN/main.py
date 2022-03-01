@@ -157,7 +157,7 @@ def run(mode, targets, start_date, end_date, frequency, sample_size, feature_cha
             main.api_history(filename=file_name)
             main.rule_based()
 
-        if 'gasf' in mode:
+        if 'gasf' in mode: #test
             main.gasf()
 
         if 'cnn' in mode:
