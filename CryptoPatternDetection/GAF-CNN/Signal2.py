@@ -181,19 +181,39 @@ class Signal(object):
         self.data['trend2'] = self.data['close'].rolling(8).apply(self.trend, raw=False)
         
     def detect_all(self, target, look_forward):
+        def good_map(x):
+            if x == 1:
+                return 1
+            elif x == 2 or x == 0:
+                return 0
+            else:
+                pass
+
+        def bad_map(x):
+            if x == 2:
+                return 1
+            elif x == 1 or x == 0:
+                return 0
+            else:
+                pass
+
         for signal in self.detect_ls:
             if signal == 'MorningStar':
                 self.data['MorningStar'] = self.data['close'].shift(-look_forward).rolling(4+look_forward).apply(self.dataframe_roll_morning(self.data, look_forward), raw=False)
-                self.data['MorningStar_good'] = self.data['MorningStar'].map(lambda x: 1 if x == 1 else 0)
-                self.data['MorningStar_bad'] = self.data['MorningStar'].map(lambda x: 1 if x == 2 else 0)
+                self.data['MorningStar_good'] = self.data['MorningStar'].map(good_map)
+                self.data['MorningStar_bad'] = self.data['MorningStar'].map(bad_map)
+                # self.data['MorningStar_good'] = self.data['MorningStar'].map(lambda x: 1 if x == 1 else 0)
+                # self.data['MorningStar_bad'] = self.data['MorningStar'].map(lambda x: 1 if x == 2 else 0)
                 if self.save_plot == True: 
                     self.pattern(self.data, self.time_period, 'MorningStar_good', look_forward)
                     self.pattern(self.data, self.time_period, 'MorningStar_bad', look_forward)
             
             elif signal == 'EveningStar':
                 self.data['EveningStar'] = self.data['close'].shift(-look_forward).rolling(4+look_forward).apply(self.dataframe_roll_evening(self.data, look_forward), raw=False)
-                self.data['EveningStar_good'] = self.data['EveningStar'].map(lambda x: 1 if x == 1 else 0)
-                self.data['EveningStar_bad'] = self.data['EveningStar'].map(lambda x: 1 if x == 2 else 0)
+                self.data['EveningStar_good'] = self.data['EveningStar'].map(good_map)
+                self.data['EveningStar_bad'] = self.data['EveningStar'].map(bad_map)
+                # self.data['EveningStar_good'] = self.data['EveningStar'].map(lambda x: 1 if x == 1 else (0 if x == 0 or x == 2 else ''))
+                # self.data['EveningStar_bad'] = self.data['EveningStar'].map(lambda x: 1 if x == 2 else (0 if x == 0 or x == 1 else ''))
                 if self.save_plot == True:
                     self.pattern(self.data, self.time_period, 'EveningStar_good', look_forward)
                     self.pattern(self.data, self.time_period, 'EveningStar_bad', look_forward)
