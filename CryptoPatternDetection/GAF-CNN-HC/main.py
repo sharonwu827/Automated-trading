@@ -144,7 +144,7 @@ def run(mode, targets, start_date, end_date, frequency, sample_size, ignore_patt
         his_ls = ['date', 'open', 'high', 'low', 'close', 'volume']
         real_ls = ['timestamp', 'open', 'dayHigh', 'dayLow', 'price']
         pattern_ls = ['MorningStar', 'EveningStar']
-        #pattern_ls = ['MorningStar_good', 'MorningStar_bad','EveningStar_good', 'EveningStar_bad']
+        pattern_ls = ['MorningStar_good', 'MorningStar_bad','EveningStar_good', 'EveningStar_bad']
         signal_ls = ['MorningStar', 'EveningStar']
         save_plot = False
         file_name = f'./csv/{target}_history.csv'
@@ -155,6 +155,9 @@ def run(mode, targets, start_date, end_date, frequency, sample_size, ignore_patt
         if 'csv_download' in mode:
             target = target
             df = get_timeseries_history(target.replace('_', '/'), start_date, end_date, frequency)
+            #df_blockchain = get_timeseries_history(target.replace('_', '/'), start_date, end_date, 'day', data_type='blockchain')
+            df_social = get_timeseries_history(target.replace('_', '/'), start_date, end_date, frequency,data_type='social')
+            df = df.join(df_social,how='left')
             df.to_csv(file_name)
             print(df.head())
 

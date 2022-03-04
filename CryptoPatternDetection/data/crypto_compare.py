@@ -25,7 +25,7 @@ def get_hist_data(from_sym='BTC', to_sym='USD', timeframe='day', limit=2000,
     url = None
 
     if data_type == 'price':
-        url = 'https://min-api.cryptocompare.com/data/v2/histo/'
+        url = 'https://min-api.cryptocompare.com/data/v2/histo'
         parameters = {'fsym': from_sym,
                       'tsym': to_sym,
                       'limit': limit,
@@ -131,6 +131,7 @@ def get_timeseries_history(pair, start_date, end_date, timeframe, data_type ='pr
 
 if __name__ == '__main__':
     df = get_timeseries_history('ETH/USD', '2021-12-09', '2022-02-07', 'day', data_type='blockchain')
+    df = get_timeseries_history('BTC/USD', '2021-12-09', '2022-02-07', 'day', data_type='blockchain')
     #df.plot(y='hashrate')
     df = get_timeseries_history('ETH/USD', '2021-12-09', '2022-02-07', 'hour', data_type='social')
 
