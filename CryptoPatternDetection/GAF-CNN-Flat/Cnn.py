@@ -75,7 +75,7 @@ class CNN(object):
                               padding='same',
                               activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
-
+        
         self.model.add(Dropout(0.25))
         self.model.add(Flatten())
         self.model.add(Dense(128, activation='relu'))
