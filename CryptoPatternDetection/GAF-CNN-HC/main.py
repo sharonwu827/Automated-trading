@@ -133,18 +133,18 @@ class PatternModel(object):
 @click.option('-end_date', default='2022-02-15', help='end date of history.')
 @click.option('-frequency', default='hour', help='price frequency.')
 @click.option('-sample_size', default=30, help='Number of cvs samples to gasf.')
-@click.option('-ignore_patternless', is_flag=True, help='Flag of patternless')
+@click.option('-ignore_patternless', default=True, help='Flag of patternless')
 @click.option('-feature_channels', default="open,high,low,close", help='feature channels')  #['open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
+@click.option('-pattern_ls', default="MorningStar_good,MorningStar_bad,EveningStar_good,EveningStar_bad", help='pattern ls')
 
-def run(mode, targets, start_date, end_date, frequency, sample_size, ignore_patternless, feature_channels):
+def run(mode, targets, start_date, end_date, frequency, sample_size, ignore_patternless, feature_channels, pattern_ls):
     for target in targets.split(','):
         rule = '1D'
         url_his = None
         url_real = None
         his_ls = ['date', 'open', 'high', 'low', 'close', 'volume']
         real_ls = ['timestamp', 'open', 'dayHigh', 'dayLow', 'price']
-        pattern_ls = ['MorningStar', 'EveningStar']
-        pattern_ls = ['MorningStar_good', 'MorningStar_bad','EveningStar_good', 'EveningStar_bad']
+        pattern_ls = pattern_ls.split(',')
         signal_ls = ['MorningStar', 'EveningStar']
         save_plot = False
         file_name = f'./csv/{target}_history.csv'

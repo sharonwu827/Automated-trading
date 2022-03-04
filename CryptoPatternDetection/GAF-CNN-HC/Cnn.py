@@ -94,7 +94,7 @@ class CNN(object):
                                             validation_split=split,
                                             epochs=100,
                                             batch_size=300, #300
-                                            verbose=2) # 2
+                                            verbose=1) # 2
 
     def show(self):
         self.show_train_history(self.train_history, 'loss', 'val_loss')
