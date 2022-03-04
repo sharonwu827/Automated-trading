@@ -52,7 +52,7 @@ def get_gasf(arr):
 
 def get_arr(data, signal, d=None, columns=None):
     if signal != 'n':
-        df_es = data.loc[data[signal]==1]
+        df_es = data.loc[data[signal]>=1]
     else:
         df_es = d
     arr = np.zeros((df_es.shape[0], 10, len(columns)))

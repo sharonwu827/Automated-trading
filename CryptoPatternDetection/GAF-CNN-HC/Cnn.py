@@ -70,7 +70,7 @@ class CNN(object):
                               input_shape=self.input_shape,
                               activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        self.model.add(Conv2D(filters=16,
+        self.model.add(Conv2D(filters=32,
                               kernel_size=(2, 2),
                               padding='same',
                               activation='relu'))
@@ -87,13 +87,13 @@ class CNN(object):
     def train(self, split):
         # adam = optimizers.Adam(lr=0.01, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
         self.model.compile(loss='categorical_crossentropy',
-                           optimizer='Adam', #Adam
-                           metrics=['accuracy', Precision(name='precision'), Recall(name='recall')]) # accuracy
+                           optimizer='adam', #adam
+                           metrics=['accuracy',Precision(name='precision'), Recall(name='recall')]) # accuracy , Precision(name='precision'), Recall(name='recall')]
         self.train_history = self.model.fit(x=self.X_train_image,
                                             y=self.y_trainOneHot,
                                             validation_split=split,
-                                            epochs=300,
-                                            batch_size=1000, #300
+                                            epochs=100,
+                                            batch_size=300, #300
                                             verbose=2) # 2
 
     def show(self):

@@ -61,7 +61,7 @@ class PatternModel(object):
             gasf_arr[j, :, :, :, :] = gasf[0:self.sample_size, :, :, :]  # data balancing
         df = data_1D_pattern.copy()
         for i in self.pattern_ls:
-            df = df.loc[df[i] != 1]  # none signal pattern
+            df = df.loc[df[i] == 0]  # none signal pattern
         df = shuffle(df[9::])  # 1 out of 9
         gasf = util_gasf.detect(data_1D_pattern, 'n', columns=self.columns, d=df)
         gasf_arr[-1, :, :, :, :] = gasf[0:self.sample_size, :, :, :]
@@ -125,10 +125,10 @@ class PatternModel(object):
 
 @click.command()
 @click.option('-mode', default='csv_download', help='csv_download, gasf, gasf+cnn')
-@click.option('-targets', default='BTC_USD', help='Number of greetings.')
-@click.option('-start_date', default='2022-01-01', help='Number of greetings.')
-@click.option('-end_date', default='2022-02-15', help='Number of greetings.')
-@click.option('-frequency', default='hour', help='Number of greetings.')
+@click.option('-targets', default='BTC_USD', help='target coin.')
+@click.option('-start_date', default='2022-02-01', help='start date of history.')
+@click.option('-end_date', default='2022-02-15', help='end date of history.')
+@click.option('-frequency', default='hour', help='price frequency.')
 @click.option('-sample_size', default=30, help='Number of cvs samples to gasf.')
 @click.option('-feature_channels', default="open,high,low,close", help='feature channels')  #['open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
 
@@ -139,7 +139,7 @@ def run(mode, targets, start_date, end_date, frequency, sample_size, feature_cha
         url_real = None
         his_ls = ['date', 'open', 'high', 'low', 'close', 'volume']
         real_ls = ['timestamp', 'open', 'dayHigh', 'dayLow', 'price']
-        pattern_ls = ['MorningStar_good', 'MorningStar_bad', 'EveningStar_good', 'EveningStar_bad']
+        pattern_ls = ['MorningStar', 'EveningStar']
         signal_ls = ['MorningStar', 'EveningStar']
         save_plot = False
         file_name = f'./csv/{target}_history.csv'
