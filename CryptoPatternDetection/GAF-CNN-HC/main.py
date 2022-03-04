@@ -51,33 +51,36 @@ class PatternModel(object):
         self.data_pattern = Sig.detect_all(self.target, look_forward=8)
         Sig.summary()
 
-    def gasf(self):
+    def gasf(self, ignore_patternless=False):
         data_1D_pattern = pd.read_csv(self.data_pattern)
-        gasf_arr = np.zeros((len(self.pattern_ls) + 1, self.sample_size, 10, 10, len(self.columns))) # choose 30 samples for each signal
+        feature_size = len(self.pattern_ls) + 1 if not ignore_patternless else len(self.pattern_ls)
+        gasf_arr = np.zeros((feature_size, self.sample_size, 10, 10, len(self.columns))) # choose 30 samples for each signal
         for i, j in zip(self.pattern_ls, range(len(self.pattern_ls))):
             gasf = util_gasf.detect(data_1D_pattern, i, columns=self.columns)
             if gasf.shape[0] == 0:  # if there is no sample for signal
                 continue  # ingore for now
-            gasf_arr[j, :, :, :, :] = gasf[0:self.sample_size, :, :, :]  # data balancing
+            gasf_arr[j, :, :, :, :] = gasf[0:self.sample_size, :, :, :]  # data0 balancing
         df = data_1D_pattern.copy()
-        for i in self.pattern_ls:
-            df = df.loc[df[i] == 0]  # none signal pattern
-        df = shuffle(df[9::])  # 1 out of 9
-        gasf = util_gasf.detect(data_1D_pattern, 'n', columns=self.columns, d=df)
-        gasf_arr[-1, :, :, :, :] = gasf[0:self.sample_size, :, :, :]
+        if not ignore_patternless:
+            for i in self.pattern_ls:
+                df = df.loc[df[i] == 0]  # none signal pattern
+            df = shuffle(df[9::])  # 1 out of 9
+            gasf = util_gasf.detect(data_1D_pattern, 'n', columns=self.columns, d=df)
+            gasf_arr[-1, :, :, :, :] = gasf[0:self.sample_size, :, :, :]
         # self.gasf_arr = './gasf_arr/gasf_arr_' + self.target
         with open(self.gasf_arr, 'wb') as handle:
             pickle.dump(gasf_arr, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def process_xy(self):
+    def process_xy(self, ignore_patternless=False):
         with open(self.gasf_arr, 'rb') as handle:
             gasf_arr = pickle.load(handle)
-        x_arr = np.zeros(((len(self.pattern_ls) + 1), self.sample_size, 10, 10, len(self.columns)))
-        for i in range(len(self.pattern_ls) + 1):
+        feature_size = len(self.pattern_ls) + 1 if not ignore_patternless else len(self.pattern_ls)
+        x_arr = np.zeros((feature_size, self.sample_size, 10, 10, len(self.columns)))
+        for i in range(feature_size):
             x_arr[i, :, :, :, :] = gasf_arr[i, 0:self.sample_size, :, :, :]
-        x_arr = gasf_arr.reshape((len(self.pattern_ls) + 1) * self.sample_size, 10, 10, len(self.columns))
+        x_arr = gasf_arr.reshape(feature_size * self.sample_size, 10, 10, len(self.columns))
         y_arr = []
-        for i in range(len(self.pattern_ls) + 1):
+        for i in range(feature_size):
             ls = [i] * self.sample_size
             y_arr.extend(ls)
         y_arr = np.array(y_arr)
@@ -130,9 +133,10 @@ class PatternModel(object):
 @click.option('-end_date', default='2022-02-15', help='end date of history.')
 @click.option('-frequency', default='hour', help='price frequency.')
 @click.option('-sample_size', default=30, help='Number of cvs samples to gasf.')
+@click.option('-ignore_patternless', is_flag=True, help='Flag of patternless')
 @click.option('-feature_channels', default="open,high,low,close", help='feature channels')  #['open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
 
-def run(mode, targets, start_date, end_date, frequency, sample_size, feature_channels):
+def run(mode, targets, start_date, end_date, frequency, sample_size, ignore_patternless, feature_channels):
     for target in targets.split(','):
         rule = '1D'
         url_his = None
@@ -140,6 +144,7 @@ def run(mode, targets, start_date, end_date, frequency, sample_size, feature_cha
         his_ls = ['date', 'open', 'high', 'low', 'close', 'volume']
         real_ls = ['timestamp', 'open', 'dayHigh', 'dayLow', 'price']
         pattern_ls = ['MorningStar', 'EveningStar']
+        #pattern_ls = ['MorningStar_good', 'MorningStar_bad','EveningStar_good', 'EveningStar_bad']
         signal_ls = ['MorningStar', 'EveningStar']
         save_plot = False
         file_name = f'./csv/{target}_history.csv'
@@ -158,10 +163,10 @@ def run(mode, targets, start_date, end_date, frequency, sample_size, feature_cha
             main.rule_based()
 
         if 'gasf' in mode: #test
-            main.gasf()
+            main.gasf(ignore_patternless=ignore_patternless)
 
         if 'cnn' in mode:
-            main.process_xy()
+            main.process_xy(ignore_patternless=ignore_patternless)
             main.cnn()
 
 if __name__ == "__main__":
@@ -171,7 +176,17 @@ if __name__ == "__main__":
 
 
 
+'''
+8/8 - 0s - loss: 0.3661 - accuracy: 0.8406 - precision: 0.8406 - recall: 0.8406 - val_loss: 0.7228 - val_accuracy: 0.6250 - val_precision: 0.6250 - val_recall: 0.6250 - 169ms/epoch - 21ms/step
+38/38 [==============================] - 0s 10ms/step - loss: 0.7669 - accuracy: 0.6150 - precision: 0.6150 - recall: 0.6150
+Score of the Testing Data: [0.7668928503990173, 0.6150000095367432, 0.6150000095367432, 0.6150000095367432]
+2022-03-03 23:10:14.286969: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:112] Plugin optimizer for device_type GPU is enabled.
+predict    0    1
+label            
+0        376  246
+1        216  362
 
+'''
 
 
 
