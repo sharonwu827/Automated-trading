@@ -45,7 +45,7 @@ class Signal(object):
             cond2 = (open2 > half1)
             cond3 = (close3 < half2)
 
-            ret = (window_df['close'][-1] - window_df['close'][-look_forward]) / window_df['close'][-look_forward]
+            ret = (window_df['close_forward'][-1] - window_df['close'][-1]) / window_df['close'][-1]
 
             if cond1 and cond2 and cond3:
                 if ret <= -0.01:
@@ -73,7 +73,7 @@ class Signal(object):
             cond2 = (close3 >= half1)
             cond3 = (open2 <= half2)
 
-            ret = (window_df['close'][-1] - window_df['close'][-look_forward]) / window_df['close'][-look_forward]
+            ret = (window_df['close_forward'][-1] - window_df['close'][-1]) / window_df['close'][-1]
             #cond4 = (percentile1 > 60)
                          
             if cond1 and cond2 and cond3:
@@ -198,8 +198,9 @@ class Signal(object):
                 pass
 
         for signal in self.detect_ls:
+            self.data['close_forward'] = self.data['close'].shift(-look_forward)
             if signal == 'MorningStar':
-                self.data['MorningStar'] = self.data['close'].shift(-look_forward).rolling(4+look_forward).apply(self.dataframe_roll_morning(self.data, look_forward), raw=False)
+                self.data['MorningStar'] = self.data['close'].rolling(4).apply(self.dataframe_roll_morning(self.data, look_forward), raw=False)
                 self.data['MorningStar_good'] = self.data['MorningStar'].map(good_map)
                 self.data['MorningStar_bad'] = self.data['MorningStar'].map(bad_map)
                 # self.data['MorningStar_good'] = self.data['MorningStar'].map(lambda x: 1 if x == 1 else 0)
@@ -209,7 +210,7 @@ class Signal(object):
                     self.pattern(self.data, self.time_period, 'MorningStar_bad', look_forward)
             
             elif signal == 'EveningStar':
-                self.data['EveningStar'] = self.data['close'].shift(-look_forward).rolling(4+look_forward).apply(self.dataframe_roll_evening(self.data, look_forward), raw=False)
+                self.data['EveningStar'] = self.data['close'].rolling(4).apply(self.dataframe_roll_evening(self.data, look_forward), raw=False)
                 self.data['EveningStar_good'] = self.data['EveningStar'].map(good_map)
                 self.data['EveningStar_bad'] = self.data['EveningStar'].map(bad_map)
                 # self.data['EveningStar_good'] = self.data['EveningStar'].map(lambda x: 1 if x == 1 else (0 if x == 0 or x == 2 else ''))
@@ -239,7 +240,7 @@ class Signal(object):
         total = self.data.shape[0]
         num = None
         for i in self.pattern_ls:
-            num = np.sum(self.data[i])
+            num = np.sum(self.data[i]>0)
             print('Number of', i, ': %s // %s' % (num, total), '\n')
         
         

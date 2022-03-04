@@ -198,8 +198,8 @@ class Signal(object):
                 pass
 
         for signal in self.detect_ls:
+            self.data['close_forward'] = self.data['close'].shift(-look_forward)
             if signal == 'MorningStar':
-                self.data['close_forward'] = self.data['close'].shift(-look_forward)
                 self.data['MorningStar'] = self.data['close'].rolling(4).apply(self.dataframe_roll_morning(self.data, look_forward), raw=False)
                 self.data['MorningStar_good'] = self.data['MorningStar'].map(good_map)
                 self.data['MorningStar_bad'] = self.data['MorningStar'].map(bad_map)
@@ -240,7 +240,7 @@ class Signal(object):
         total = self.data.shape[0]
         num = None
         for i in self.pattern_ls:
-            num = np.sum(self.data[i])
+            num = np.sum(self.data[i]>0)
             print('Number of', i, ': %s // %s' % (num, total), '\n')
         
         

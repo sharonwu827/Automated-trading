@@ -61,7 +61,7 @@ class PatternModel(object):
             gasf_arr[j, :, :, :, :] = gasf[0:self.sample_size, :, :, :]  # data balancing
         df = data_1D_pattern.copy()
         for i in self.pattern_ls:
-            df = df.loc[df[i] != 1]  # none signal pattern
+            df = df.loc[df[i] == 0]  # none signal pattern
         df = shuffle(df[9::])  # 1 out of 9
         gasf = util_gasf.detect(data_1D_pattern, 'n', columns=self.columns, d=df)
         gasf_arr[-1, :, :, :, :] = gasf[0:self.sample_size, :, :, :]
