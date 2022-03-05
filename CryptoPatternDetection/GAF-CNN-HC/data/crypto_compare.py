@@ -115,7 +115,7 @@ def get_timeseries_history(pair, start_date, end_date, timeframe, data_type ='pr
     elif timeframe == 'minute':
         delta_ed = 60
 
-    while sd < ed:
+    while sd < ed - 2000 * delta_ed:
         data = get_hist_data(cryptocurrency, target_currency, timeframe, limit=2000, toTs=ed, data_type = data_type)
         ed = ed - 2000 * delta_ed
         ed = pd.to_datetime(ed, unit='s').to_pydatetime().timestamp()

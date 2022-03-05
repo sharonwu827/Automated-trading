@@ -92,9 +92,9 @@ class CNN(object):
         self.train_history = self.model.fit(x=self.X_train_image,
                                             y=self.y_trainOneHot,
                                             validation_split=split,
-                                            epochs=100,
-                                            batch_size=300, #300
-                                            verbose=1) # 2
+                                            epochs=200, #100
+                                            batch_size=500, #300
+                                            verbose=2) # 2
 
     def show(self):
         self.show_train_history(self.train_history, 'loss', 'val_loss')
