@@ -51,8 +51,10 @@ class PatternModel(object):
         self.data_pattern = Sig.detect_all(self.target, look_forward=8)
         Sig.summary()
 
-    def gasf(self, ignore_patternless=False):
+    def gasf(self, feature_channels = None, pattern_ls=[], ignore_patternless=False):
         data_1D_pattern = pd.read_csv(self.data_pattern)
+        if feature_channels:
+            data_1D_pattern = data_1D_pattern[feature_channels+pattern_ls]
         feature_size = len(self.pattern_ls) + 1 if not ignore_patternless else len(self.pattern_ls)
         gasf_arr = np.zeros((feature_size, self.sample_size, 10, 10, len(self.columns))) # choose 30 samples for each signal
         for i, j in zip(self.pattern_ls, range(len(self.pattern_ls))):
@@ -166,7 +168,7 @@ def run(mode, targets, start_date, end_date, frequency, sample_size, ignore_patt
             main.rule_based()
 
         if 'gasf' in mode: #test
-            main.gasf(ignore_patternless=ignore_patternless)
+            main.gasf(feature_channels.split(','), pattern_ls, ignore_patternless=ignore_patternless)
 
         if 'cnn' in mode:
             main.process_xy(ignore_patternless=ignore_patternless)
