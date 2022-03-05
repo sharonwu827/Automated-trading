@@ -69,17 +69,19 @@ class CNN(object):
                               padding='same',
                               input_shape=self.input_shape,
                               activation='relu'))
-        self.model.add(MaxPooling2D(pool_size=(2, 2)))
+        # self.model.add(MaxPooling2D(pool_size=(2, 2)))
         self.model.add(Conv2D(filters=32,
                               kernel_size=(2, 2),
                               padding='same',
                               activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
 
-        self.model.add(Dropout(0.25))
+        self.model.add(Dropout(0.5)) #0.25
         self.model.add(Flatten())
         self.model.add(Dense(128, activation='relu'))
         self.model.add(Dropout(0.5))
+        self.model.add(Dense(64, activation='relu')) # add
+        self.model.add(Dropout(0.5)) # add
         self.model.add(Dense(self.label_shape, activation='softmax'))
 
         print(self.model.summary())
@@ -92,7 +94,7 @@ class CNN(object):
         self.train_history = self.model.fit(x=self.X_train_image,
                                             y=self.y_trainOneHot,
                                             validation_split=split,
-                                            epochs=200, #100
+                                            epochs=300, #100
                                             batch_size=500, #300
                                             verbose=2) # 2
 
