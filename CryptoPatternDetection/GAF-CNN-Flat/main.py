@@ -141,7 +141,7 @@ def run(mode, targets, start_date, end_date, frequency, sample_size, feature_cha
         real_ls = ['timestamp', 'open', 'dayHigh', 'dayLow', 'price']
         pattern_ls = ['MorningStar_good', 'MorningStar_bad', 'EveningStar_good', 'EveningStar_bad'] # ['MorningStar_good', 'MorningStar_bad', 'EveningStar_good', 'EveningStar_bad']
         signal_ls = ['MorningStar', 'EveningStar']
-        save_plot = False
+        save_plot = True
         file_name = f'./csv/{target}_history.csv'
         main = PatternModel(target, rule, url_his, url_real, his_ls, real_ls, signal_ls, pattern_ls, save_plot, sample_size, feature_channels.split(','))
         main.gasf_arr = './gasf_arr/gasf_arr_' + target

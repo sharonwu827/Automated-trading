@@ -135,7 +135,7 @@ class Signal(object):
         df = df.reset_index()
         t_ls = df.loc[df[signal] == 1].index        
         for i, j in zip(t_ls, range(1, len(t_ls) + 1)):
-            target = df.loc[df.index <= i].iloc[-10-look_forward:]
+            target = df.loc[df.index <= (i+look_forward)].iloc[-10-look_forward:]
             target.set_index('date',inplace=True)
             fontsize=12
             plt.rcParams['xtick.labelsize'] = fontsize  
