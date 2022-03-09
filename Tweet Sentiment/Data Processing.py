@@ -13,7 +13,7 @@ import twint
 import nest_asyncio
 
 
-def tweets_api(keyword, Language, min_replies, start_time, end_time):
+def tweets_api(keyword, Language, min_replies):
     '''
     :param keyword:
     :param Language:
@@ -27,14 +27,15 @@ def tweets_api(keyword, Language, min_replies, start_time, end_time):
     c.Store_pandas = True
     # c.Store_csv = True
     # c.Output = "test.csv"
-    c.Since = start_time
-    c.until = end_time
+    c.Since = '2022-02-16 14:00:00'
+    c.until = '2022-03-01 06:00:00'
     c.Min_replies = min_replies
     c.Pandas = True
-    c.Hide_output = True
     twint.run.Search(c)
     df = twint.storage.panda.Tweets_df
     df = df[["date", "username", "tweet", "hashtags", "nreplies", "nretweets", "nlikes"]]
+    return df
+
 
 
 def text_preprocessing(tweet):
@@ -87,4 +88,47 @@ df['confidence score'] = df['confidence score'].replace(np.nan, 0)
 
 
 
+
+def twint_loop(searchterm, since, until):
+    '''
+
+    :param searchterm: keywork searched
+    :param since:
+    :param until:
+    :return: df
+    '''
+
+    def twint_search(searchterm, since, until, json_name):
+        '''
+        Twint search for a specific date range.
+        Stores results to df.
+        '''
+        nest_asyncio.apply()
+        c = twint.Config()
+        c.Search = searchterm
+        c.Since = since
+        c.Until = until
+        c.Hide_output = True
+        c.Pandas = True
+        c.Output = json_name
+
+        try:
+            twint.run.Search(c)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            print("Problem with %s." % since)
+
+    daterange = pd.date_range(since, until)
+
+    for start_date in daterange:
+
+        since= start_date.strftime("%Y-%m-%d")
+        until = (start_date + timedelta(days=1)).strftime("%Y-%m-%d")
+
+        json_name = '%s.json' % since
+        json_name = path.join(dirname, json_name)
+
+        print('Getting %s ' % since )
+        twint_search(searchterm, since, until, json_name)
 
