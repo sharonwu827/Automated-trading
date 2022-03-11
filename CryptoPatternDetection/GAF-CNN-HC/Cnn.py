@@ -95,7 +95,7 @@ class CNN(object):
                                             y=self.y_trainOneHot,
                                             validation_split=split,
                                             epochs=300, #100
-                                            batch_size=1000, #300
+                                            batch_size=800, #300
                                             verbose=2) # 2
 
     def show(self):
