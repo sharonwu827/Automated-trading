@@ -42,10 +42,10 @@ tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased', do_lower_case=Tru
 
 def preprocessing_for_bert(X, y, batch_size=32):
     '''
-    :param X:
-    :param y:
+    :param X: array
+    :param y: array
     :param batch_size:
-    :return: dataloader
+    :return: dataloader for bert training
     '''
     input_ids = []
     attention_masks = []

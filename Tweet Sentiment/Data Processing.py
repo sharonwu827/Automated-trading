@@ -2,15 +2,12 @@ import random
 import time
 import datetime
 import numpy as np
-import matplotlib.pyplot as plt
-% matplotlib
-inline
-import sys
-import os
 # Set up TWINT config
 import twint
 # Solve compatibility issues with notebooks and RunTime errors.
 import nest_asyncio
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+analyzer = SentimentIntensityAnalyzer()
 
 
 def tweets_api(keyword, Language, min_replies):
@@ -27,7 +24,7 @@ def tweets_api(keyword, Language, min_replies):
     c.Store_pandas = True
     # c.Store_csv = True
     # c.Output = "test.csv"
-    c.Since = '2022-02-16 14:00:00'
+    c.Since = '2019-03-16 14:00:00'
     c.until = '2022-03-01 06:00:00'
     c.Min_replies = min_replies
     c.Pandas = True
@@ -37,10 +34,9 @@ def tweets_api(keyword, Language, min_replies):
     return df
 
 
-
 def text_preprocessing(tweet):
     tweet = re.sub(text_cleaning_regex, ' ', str(tweet).lower()).strip()
-    res = []
+    res=[]
     # Lowercase
     tweet = tweet.lower()
     # Remove single letter words
@@ -65,14 +61,10 @@ def vader_sentiment_result(sent):
     else:
         return 1
 
-
-
 # df['n_words'] = df['tweet'].apply(lambda x: len(x.split()))
 df['tweet']=df['tweet'].apply(lambda x: text_preprocessing(x))
 df["vader_result"] = df["tweet"].apply(lambda x: vader_sentiment_result(x))
 
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
-analyzer = SentimentIntensityAnalyzer()
 df['sentiment_dict'] = df['tweet'].apply(lambda x:analyzer.polarity_scores(x))
 df['compound']  = df['sentiment_dict'].apply(lambda score_dict: score_dict['compound'])
 df['neg']  = df['sentiment_dict'].apply(lambda score_dict: score_dict['neg'])*-1

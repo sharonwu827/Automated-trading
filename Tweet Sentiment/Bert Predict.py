@@ -1,30 +1,21 @@
-def bert_predict(model_name, dataloader):
-    '''
-    :param model_name:
-    :param dataloader:
-    :return:
-    '''
-    # load model
-    checkpoint = torch.load(output_model, map_location='cpu')
-    bert_classifier.load_state_dict(checkpoint['bert_classifier_state_dict'])
-    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+def predict(model, prediction_dataloader):
+    # Put model in evaluation mode
+    model.eval()
+    # Tracking variables
+    predictions, true_labels = [], []
+    # Predict
+    for batch in prediction_dataloader:
+        batch = tuple(t.to(device) for t in batch)
+        # Unpack the inputs from our dataloader
+        b_input_ids, b_input_mask, b_labels = batch
+        # Telling the model not to compute or store gradients, saving memory and speeding up predictio
 
-    bert_classifier.eval()
-    all_logits = []
-
-    # For each batch in our test set...
-    for batch in test_dataloader:
-        # Load batch to GPU
-        b_input_ids, b_attn_mask = tuple(t.to(device) for t in batch)[:2]
-        # Compute logits
         with torch.no_grad():
-            logits = bert_classifier(b_input_ids, b_attn_mask)
-        all_logits.append(logits)
+            # Forward pass, calculate logit predictions
+            outputs = model(b_input_ids, token_type_ids=None, attention_mask=b_input_mask)
+        logits = outputs[0]
+        logits = logits.detach().cpu().numpy()
+        predictions.append(logits)
 
-    # Concatenate logits from each batch
-    all_logits = torch.cat(all_logits, dim=0)
 
-    # Apply softmax to calculate probabilities
-    probs = F.softmax(all_logits, dim=1).cpu().numpy()
 
-    return probs
