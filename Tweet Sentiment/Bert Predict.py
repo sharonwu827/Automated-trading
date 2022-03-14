@@ -1,4 +1,9 @@
 def predict(model, prediction_dataloader):
+    '''
+    :param model: trained bert model
+    :param prediction_dataloader: tensor dataloader for predictions
+    :return: the probs: sentiment score
+    '''
     # Put model in evaluation mode
     model.eval()
     # Tracking variables
@@ -16,6 +21,7 @@ def predict(model, prediction_dataloader):
         logits = outputs[0]
         logits = logits.detach().cpu().numpy()
         predictions.append(logits)
-
-
-
+        flat_preds = [item for sublist in predictions for item in sublist]
+        # The scores are normalized through a softmax.
+        probs = np.argmax(flat_preds, axis=1).flatten()
+    return probs

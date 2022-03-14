@@ -132,7 +132,6 @@ def kappa_score(preds, labels):
 # Specify loss function
 loss_fn = nn.CrossEntropyLoss()
 
-
 def set_seed(seed_value=42):
     """Set seed for reproducibility.
     """
@@ -154,12 +153,9 @@ def format_time(elapsed):
 
 
 def train(model, train_dataloader, epochs):
-    '''
-    :param model: bert classifier
-    :param train_dataloader:
-    :param epochs:
-    :return: training loss and time
-    '''
+    """
+    Train the BertClassifier model
+    """
     train_loss_set = []
     print("Start training...\n")
 
@@ -200,9 +196,12 @@ def train(model, train_dataloader, epochs):
             logits = output.logits
 
             total_train_loss += loss.item()
+            # Perform a backward pass to compute gradients
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            # Update the model’s parameters
             optimizer.step()
+            # Update the learning rate
             scheduler.step()
             # Calculate the average loss over all of the batches.
 
@@ -211,7 +210,6 @@ def train(model, train_dataloader, epochs):
         print("")
         print("  Average training loss: {0:.2f}".format(avg_train_loss))
         print("  Training epcoh took: {:}".format(training_time))
-
 
 # save model
 output_model = './sentiment.pth'
