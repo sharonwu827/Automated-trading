@@ -212,7 +212,7 @@ def train(model, train_dataloader, epochs):
         print("  Training epcoh took: {:}".format(training_time))
 
 # save model
-output_model = './sentiment.pth'
+output_model = './sentiment_bert.pth'
 
 def save(bert_classifier, optimizer):
     torch.save({
@@ -221,3 +221,8 @@ def save(bert_classifier, optimizer):
     }, output_model)
 
 save(bert_classifier, optimizer)
+
+# to load
+# checkpoint = torch.load('./sentiment_bert.pth')
+# bert_classifier.load_state_dict(checkpoint['bert_classifier_state_dict'])
+# optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
