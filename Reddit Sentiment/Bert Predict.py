@@ -1,3 +1,4 @@
+
 def predict(model, prediction_dataloader):
     '''
     :param model: trained bert model
