@@ -122,6 +122,15 @@ def get_timeseries_history(pair, start_date, end_date, timeframe, data_type ='pr
         df = data_to_dataframe(data)
         df_all = df if df_all is None else pd.concat([df, df_all])
 
+    while sd < ed:
+        limit_num = int((ed-sd)/delta_ed)
+        data = get_hist_data(cryptocurrency, target_currency, timeframe, limit=limit_num, toTs=ed, data_type = data_type)
+        ed = ed - 2000 * delta_ed
+        ed = pd.to_datetime(ed, unit='s').to_pydatetime().timestamp()
+        df = data_to_dataframe(data)
+        df_all = df if df_all is None else pd.concat([df, df_all])
+
+
     #plot_data(df_all, cryptocurrency, target_currency)
     return df_all
 

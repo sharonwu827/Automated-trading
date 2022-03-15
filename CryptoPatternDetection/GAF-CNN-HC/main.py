@@ -10,6 +10,7 @@ import pickle
 from sklearn.utils import shuffle
 from keras.models import load_model
 from data.crypto_compare import *
+from keras.metrics import Precision, Recall
 
 import click
 
@@ -55,8 +56,8 @@ class PatternModel(object):
         data_1D_pattern = pd.read_csv(self.data_pattern)
         if feature_channels:
             data_1D_pattern = data_1D_pattern[feature_channels+pattern_ls]
-        feature_size = len(self.pattern_ls) + 1 if not ignore_patternless else len(self.pattern_ls)
-        gasf_arr = np.zeros((feature_size, self.sample_size, 10, 10, len(self.columns))) # choose 30 samples for each signal
+        category_size = len(self.pattern_ls) + 1 if not ignore_patternless else len(self.pattern_ls)
+        gasf_arr = np.zeros((category_size, self.sample_size, 10, 10, len(self.columns))) # choose 30 samples for each signal
         for i, j in zip(self.pattern_ls, range(len(self.pattern_ls))):
             gasf = util_gasf.detect(data_1D_pattern, i, columns=self.columns)
             if gasf.shape[0] == 0:  # if there is no sample for signal
@@ -151,7 +152,7 @@ def run(mode, targets, start_date, end_date, frequency, sample_size, ignore_patt
         save_plot = False
         file_name = f'./csv/{target}_history.csv'
         main = PatternModel(target, rule, url_his, url_real, his_ls, real_ls, signal_ls, pattern_ls, save_plot, sample_size, feature_channels.split(','))
-        main.gasf_arr = './gasf_arr/gasf_arr_' + target
+        main.gasf_arr = './gasf/gasf_arr_' + target
         main.data_pattern = './csv/' + target + '_pattern.csv'
 
         if 'csv_download' in mode:
