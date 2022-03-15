@@ -42,10 +42,10 @@ tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased', do_lower_case=Tru
 
 def preprocessing_for_bert(X, y, batch_size=32):
     '''
-    :param X:
-    :param y:
+    :param X: array
+    :param y: array
     :param batch_size:
-    :return: dataloader
+    :return: dataloader for bert training
     '''
     input_ids = []
     attention_masks = []
@@ -132,7 +132,6 @@ def kappa_score(preds, labels):
 # Specify loss function
 loss_fn = nn.CrossEntropyLoss()
 
-
 def set_seed(seed_value=42):
     """Set seed for reproducibility.
     """
@@ -154,12 +153,9 @@ def format_time(elapsed):
 
 
 def train(model, train_dataloader, epochs):
-    '''
-    :param model: bert classifier
-    :param train_dataloader:
-    :param epochs:
-    :return: training loss and time
-    '''
+    """
+    Train the BertClassifier model
+    """
     train_loss_set = []
     print("Start training...\n")
 
@@ -200,9 +196,12 @@ def train(model, train_dataloader, epochs):
             logits = output.logits
 
             total_train_loss += loss.item()
+            # Perform a backward pass to compute gradients
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            # Update the model’s parameters
             optimizer.step()
+            # Update the learning rate
             scheduler.step()
             # Calculate the average loss over all of the batches.
 
@@ -212,9 +211,8 @@ def train(model, train_dataloader, epochs):
         print("  Average training loss: {0:.2f}".format(avg_train_loss))
         print("  Training epcoh took: {:}".format(training_time))
 
-
 # save model
-output_model = './sentiment.pth'
+output_model = './sentiment_bert.pth'
 
 def save(bert_classifier, optimizer):
     torch.save({
@@ -223,3 +221,8 @@ def save(bert_classifier, optimizer):
     }, output_model)
 
 save(bert_classifier, optimizer)
+
+# to load
+# checkpoint = torch.load('./sentiment_bert.pth')
+# bert_classifier.load_state_dict(checkpoint['bert_classifier_state_dict'])
+# optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
