@@ -126,7 +126,15 @@ class ModelPredict(object):
             self.extra_predict = np.append(na_filling, self.extra_predict)
             df['extra_predict'] = self.extra_predict
 
-        
+            def filter_predict(p, pe):
+                if p == 0 and pe == 0:
+                    return 0
+                elif p == 1 and pe == 1:
+                    return 1
+                else:
+                    return 2
+            df['predict'] = df.apply(lambda x: filter_predict(x.predict, x.extra_predict), axis=1)
+
         df.to_csv(self.predict_result)
 
     def display(self):
