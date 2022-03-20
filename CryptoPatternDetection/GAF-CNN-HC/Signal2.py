@@ -232,6 +232,51 @@ class Signal(object):
         file_name = './csv/' + target + '_pattern.csv'
         self.data.to_csv(file_name, index=False)
         return file_name
+
+    def back_detect_all(self, target, look_forward):
+        def good_map(x):
+            if x == 1:
+                return 1
+            elif x == 2 or x == 0:
+                return 0
+            else:
+                pass
+
+        def bad_map(x):
+            if x == 2:
+                return 1
+            elif x == 1 or x == 0:
+                return 0
+            else:
+                pass
+
+        for signal in self.detect_ls:
+            self.data['close_forward'] = self.data['close'].shift(-look_forward)
+            if signal == 'MorningStar':
+                self.data['MorningStar'] = self.data['close'].rolling(4).apply(
+                    self.dataframe_roll_morning(self.data, look_forward), raw=False)
+                self.data['MorningStar_good'] = self.data['MorningStar'].map(good_map)
+                self.data['MorningStar_bad'] = self.data['MorningStar'].map(bad_map)
+                # self.data['MorningStar_good'] = self.data['MorningStar'].map(lambda x: 1 if x == 1 else 0)
+                # self.data['MorningStar_bad'] = self.data['MorningStar'].map(lambda x: 1 if x == 2 else 0)
+                if self.save_plot == True:
+                    self.pattern(self.data, self.time_period, 'MorningStar_good', look_forward)
+                    self.pattern(self.data, self.time_period, 'MorningStar_bad', look_forward)
+
+            elif signal == 'EveningStar':
+                self.data['EveningStar'] = self.data['close'].rolling(4).apply(
+                    self.dataframe_roll_evening(self.data, look_forward), raw=False)
+                self.data['EveningStar_good'] = self.data['EveningStar'].map(good_map)
+                self.data['EveningStar_bad'] = self.data['EveningStar'].map(bad_map)
+                # self.data['EveningStar_good'] = self.data['EveningStar'].map(lambda x: 1 if x == 1 else (0 if x == 0 or x == 2 else ''))
+                # self.data['EveningStar_bad'] = self.data['EveningStar'].map(lambda x: 1 if x == 2 else (0 if x == 0 or x == 1 else ''))
+                if self.save_plot == True:
+                    self.pattern(self.data, self.time_period, 'EveningStar_good', look_forward)
+                    self.pattern(self.data, self.time_period, 'EveningStar_bad', look_forward)
+
+        file_name = './temp/' + target + '_backcheck_result.csv'
+        self.data.to_csv(file_name, index=False)
+        return file_name
         
     def summary(self):
         period = self.data.index[[1, -1]]

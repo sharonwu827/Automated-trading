@@ -54,6 +54,7 @@ class ModelPredict(object):
         self.extra_gasf_arr = None
         self.extra_load_data = None
         self.extra_predict = None
+        self.check_pattern = None
 
 
 
@@ -139,6 +140,9 @@ class ModelPredict(object):
 
     def display(self):
         df = pd.read_csv(self.predict_result)
+        df['datetime'] = df['time'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
+        df = df.set_index('datetime')
+
         plt.figure(figsize=(20, 5))
         plt.plot(df.close, label='Close')
 
@@ -147,15 +151,18 @@ class ModelPredict(object):
 
         plt.legend()
         plt.show()
-        
 
+    def backcheck(self):
+        Sig = Signal(self.predict_result, self.signal_ls, self.save_plot, self.pattern_ls)
+        Sig.process()
+        self.check_pattern = Sig.back_detect_all(self.target, look_forward=8)
 
 
 @click.command()
 @click.option('-mode', default='realtime', help='model chose for predict')
 @click.option('-targets', default='BTC_USD', help='target coin.')
 @click.option('-frequency', default='hour', help='price frequency.')
-@click.option('-feature_channels', default="open,high,low,close", help='feature channels')  #['open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
+@click.option('-feature_channels', default="open,high,close,low,volumeto,reddit_active_users,reddit_posts_per_hour,posts,total_page_views", help='feature channels')
 @click.option('-pattern_ls', default="MorningStar_good,MorningStar_bad,EveningStar_good,EveningStar_bad", help='pattern ls')
 @click.option('-look_back', default=7, help='days look back for prediction')
 @click.option('-filter_model', default=True, help='if include the extra 4f model for morning/evening classifier')
@@ -204,6 +211,8 @@ def run(mode, targets, frequency, feature_channels, pattern_ls, look_back, filte
         if 'display' in mode:
             main.display()
 
+        if 'backcheck' in mode:
+            main.backcheck()
 
 if __name__ == "__main__":
     run()
