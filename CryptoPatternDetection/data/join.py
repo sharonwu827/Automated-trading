@@ -12,7 +12,7 @@ def run(coins):
     for coin in coins.split(','):
         history_file = './csv/'+coin+'_USD_history.csv'
         df_0 = pd.read_csv(history_file)
-        df_0 = df_0[['time', 'high', 'low', 'open', 'volumeto', 'close']]
+        df_0 = df_0[['time', 'high', 'low', 'open', 'volumeto', 'close', 'reddit_active_users', 'reddit_posts_per_hour', 'posts', 'total_page_views']]
 
         df_join = df_0.set_index('time').join(df.set_index('datetime'))
 
