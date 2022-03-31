@@ -7,7 +7,7 @@ import click
 
 def run(coins):
     df = pd.read_csv('./news_history.csv')
-    df = df[['sentiment', 'rank_score', 'datetime']]
+    df = df[['sentiment', 'rank_score', 'datetime', 'sentimenttitle', 'sentimenttext']]
 
     for coin in coins.split(','):
         history_file = './csv/'+coin+'_USD_history.csv'
