@@ -152,7 +152,7 @@ def run(mode, targets, start_date, end_date, frequency, sample_size, ignore_patt
         save_plot = False
         file_name = f'./csv/{target}_history.csv'
         main = PatternModel(target, rule, url_his, url_real, his_ls, real_ls, signal_ls, pattern_ls, save_plot, sample_size, feature_channels.split(','))
-        main.gasf_arr = './gasf/gasf_arr_' + target
+        main.gasf_arr = './gasf_arr/gasf_arr_' + target
         main.data_pattern = './csv/' + target + '_pattern.csv'
 
         if 'csv_download' in mode:

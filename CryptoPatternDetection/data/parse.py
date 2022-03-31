@@ -24,4 +24,5 @@ df['hour']=df.datetime.map(lambda x: x.hour)
 df_grouped =df.groupby(['date','hour']).agg('mean').reset_index()
 df_grouped['datetime']= df_grouped.apply(lambda x: '{} {}'.format(x.date, str(x.hour)+':00:00'), axis=1)
 
+df_grouped.to_csv('./news_history.csv')
 print('done')
