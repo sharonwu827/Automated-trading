@@ -152,11 +152,13 @@ class ModelPredict(object):
         plt.legend()
         plt.show()
 
-        print("Buy:/n")
-        print(df[df['predict'] == 0].index)
+        print("Buy:")
+        print(df[df['predict'] == 0].close)
 
-        print("Sell:/n")
-        print(df[df['predict'] == 1].index)
+        print("Sell:")
+        print(df[df['predict'] == 1].close)
+
+
 
     def backcheck(self):
         Sig = Signal(self.predict_result, self.signal_ls, self.save_plot, self.pattern_ls)
