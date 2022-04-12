@@ -9,7 +9,7 @@ Crypto has attracted younger retail investors and newer trading institutions tha
 
 ## Links
 [Team Project Plan and Agreements](https://docs.google.com/document/d/14dtfbAhqvn7Q0gmwGvH2RIU1AdhLU69lHx9Z7ALRh0E/edit)\
-[Project Ideation](https://docs.google.com/document/d/1kPXmmdoe94NO3Fk2UT9g88b2rxnQO7s8qC-IZnaTsa0/edit)
+[Project Ideation](https://docs.google.com/document/d/1kPXmmdoe94NO3Fk2UT9g88b2rxnQO7s8qC-IZnaTsa0/edit)\
 [Presentation](https://docs.google.com/presentation/d/1c4Gdb3HPl0Lz0vGL59EKmHw3043KzXevizVmnDF1SqY/edit#slide=id.p12)
 
 ## References:
