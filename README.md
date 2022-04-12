@@ -4,7 +4,7 @@
 Crypto has attracted younger retail investors and newer trading institutions that are more likely to embrace systematic trading strategies that leverage pattern analysis. Our goal was to implement a model pipeline that uses deep learning model to help investors to incorporate alternative datasets into the pattern recognition process in order to more accurately detect the positive patterns that yields better future returns. 
 
 ## Official Website
-[Venusian.ai]https://www.venusian.ai/
+[Venusian.ai](https://www.venusian.ai/)
 
 
 ## Links
